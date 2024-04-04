@@ -88,7 +88,94 @@ export default Canister({
         return Ok(milestone.Some);
     }),
 
-    // Implement additional methods as needed following the above patterns
+    mintTokens: update([text, nat64], Result(text, Message), (userId, amount) => {
+        const userOpt = users.get(userId);
+        if ("None" in userOpt) {
+            return Err({ NotFound: `User with id=${userId} not found` });
+        }
+        let user = userOpt.Some;
+        user.tokens += amount; // Assuming tokens is a bigint
+        users.insert(userId, user);
+        return Ok(`Successfully minted ${amount} tokens for user ${userId}`);
+    }),
+
+    transferTokens: update([text, text, nat64], Result(text, Message), (fromUserId, toUserId, amount) => {
+        const fromUserOpt = users.get(fromUserId);
+        const toUserOpt = users.get(toUserId);
+        if ("None" in fromUserOpt || "None" in toUserOpt) {
+            return Err({ NotFound: `One or both users not found` });
+        }
+        let fromUser = fromUserOpt.Some;
+        let toUser = toUserOpt.Some;
+        
+        if (fromUser.tokens < amount) {
+            return Err({ InvalidPayload: `Insufficient tokens for transfer` });
+        }
+        
+        fromUser.tokens -= amount;
+        toUser.tokens += amount;
+        
+        users.insert(fromUserId, fromUser);
+        users.insert(toUserId, toUser);
+        
+        return Ok(`Successfully transferred ${amount} tokens from ${fromUserId} to ${toUserId}`);
+    }),
+
+    addMilestone: update([Milestone], Result(text, Message), (milestone) => {
+        const id = uuidv4();
+        milestones.insert(id, milestone);
+        return Ok(`Milestone ${id} added successfully`);
+    }),
+
+    checkAndRewardMilestones: update([text], Result(Vec(text), Message), (userId) => {
+        const userOpt = users.get(userId);
+        if ("None" in userOpt) {
+            return Err({ NotFound: `User with id=${userId} not found` });
+        }
+        let user = userOpt.Some;
+        let rewardedMilestones: string[] = [];
+    
+        // Use the items() or keys() method to retrieve milestones, then iterate
+        const milestoneKeys = milestones.keys(); // This retrieves an array of milestone IDs (keys)
+        milestoneKeys.forEach((milestoneId) => {
+            const milestoneOpt = milestones.get(milestoneId);
+            if ("Some" in milestoneOpt) {
+                const milestone = milestoneOpt.Some;
+                // Assuming your condition here to check if the milestone is achieved
+                if (!user.claimedMilestones.includes(milestoneId) /* && other condition */) {
+                    user.tokens += milestone.tokenReward; // Reward the user
+                    user.claimedMilestones.push(milestoneId); // Mark as claimed
+                    rewardedMilestones.push(milestoneId); // Keep track of rewarded milestones
+                }
+            }
+        });
+    
+        users.insert(userId, user);
+        return Ok(rewardedMilestones); // Return the list of rewarded milestones
+    }),
+    
+
+    redeemReward: update([text, text], Result(text, Message), (userId, rewardId) => {
+        const userOpt = users.get(userId);
+        const rewardOpt = rewards.get(rewardId);
+        if ("None" in userOpt || "None" in rewardOpt) {
+            return Err({ NotFound: `User or Reward not found` });
+        }
+        let user = userOpt.Some;
+        let reward = rewardOpt.Some;
+        
+        if (user.tokens < reward.tokenCost) {
+            return Err({ InvalidPayload: `Insufficient tokens for redemption` });
+        }
+        
+        user.tokens -= reward.tokenCost; // Deduct the cost
+        reward.availability -= 1; // Reduce reward availability
+        
+        users.insert(userId, user);
+        rewards.insert(rewardId, reward);
+        
+        return Ok(`Reward ${rewardId} successfully redeemed by ${userId}`);
+    }),
 
     // Note: Replace uuidv4() and adjust types accordingly if necessary.
 });

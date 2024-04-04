@@ -8,12 +8,7 @@ service : {
       },
     ) -> (
       variant {
-        Ok : record {
-          id : text;
-          durationInDays : nat64;
-          description : text;
-          tokenReward : nat64;
-        };
+        Ok : text;
         Err : variant { InvalidPayload : text; NotFound : text };
       },
     );
@@ -36,6 +31,12 @@ service : {
           claimedMilestones : vec text;
           roles : vec text;
         };
+        Err : variant { InvalidPayload : text; NotFound : text };
+      },
+    );
+  checkAndRewardMilestones : (text) -> (
+      variant {
+        Ok : vec text;
         Err : variant { InvalidPayload : text; NotFound : text };
       },
     );
@@ -63,4 +64,22 @@ service : {
         Err : variant { InvalidPayload : text; NotFound : text };
       },
     ) query;
+  mintTokens : (text, nat64) -> (
+      variant {
+        Ok : text;
+        Err : variant { InvalidPayload : text; NotFound : text };
+      },
+    );
+  redeemReward : (text, text) -> (
+      variant {
+        Ok : text;
+        Err : variant { InvalidPayload : text; NotFound : text };
+      },
+    );
+  transferTokens : (text, text, nat64) -> (
+      variant {
+        Ok : text;
+        Err : variant { InvalidPayload : text; NotFound : text };
+      },
+    );
 }

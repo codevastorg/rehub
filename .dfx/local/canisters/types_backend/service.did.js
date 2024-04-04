@@ -11,12 +11,7 @@ export const idlFactory = ({ IDL }) => {
         ],
         [
           IDL.Variant({
-            'Ok' : IDL.Record({
-              'id' : IDL.Text,
-              'durationInDays' : IDL.Nat64,
-              'description' : IDL.Text,
-              'tokenReward' : IDL.Nat64,
-            }),
+            'Ok' : IDL.Text,
             'Err' : IDL.Variant({
               'InvalidPayload' : IDL.Text,
               'NotFound' : IDL.Text,
@@ -46,6 +41,19 @@ export const idlFactory = ({ IDL }) => {
               'claimedMilestones' : IDL.Vec(IDL.Text),
               'roles' : IDL.Vec(IDL.Text),
             }),
+            'Err' : IDL.Variant({
+              'InvalidPayload' : IDL.Text,
+              'NotFound' : IDL.Text,
+            }),
+          }),
+        ],
+        [],
+      ),
+    'checkAndRewardMilestones' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Variant({
+            'Ok' : IDL.Vec(IDL.Text),
             'Err' : IDL.Variant({
               'InvalidPayload' : IDL.Text,
               'NotFound' : IDL.Text,
@@ -91,6 +99,45 @@ export const idlFactory = ({ IDL }) => {
           }),
         ],
         ['query'],
+      ),
+    'mintTokens' : IDL.Func(
+        [IDL.Text, IDL.Nat64],
+        [
+          IDL.Variant({
+            'Ok' : IDL.Text,
+            'Err' : IDL.Variant({
+              'InvalidPayload' : IDL.Text,
+              'NotFound' : IDL.Text,
+            }),
+          }),
+        ],
+        [],
+      ),
+    'redeemReward' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [
+          IDL.Variant({
+            'Ok' : IDL.Text,
+            'Err' : IDL.Variant({
+              'InvalidPayload' : IDL.Text,
+              'NotFound' : IDL.Text,
+            }),
+          }),
+        ],
+        [],
+      ),
+    'transferTokens' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat64],
+        [
+          IDL.Variant({
+            'Ok' : IDL.Text,
+            'Err' : IDL.Variant({
+              'InvalidPayload' : IDL.Text,
+              'NotFound' : IDL.Text,
+            }),
+          }),
+        ],
+        [],
       ),
   });
 };

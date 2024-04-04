@@ -100294,6 +100294,103 @@ var src_default = Canister({
             });
         }
         return Ok(milestone.Some);
+    }),
+    mintTokens: update([
+        text,
+        nat64
+    ], Result(text, Message), (userId, amount)=>{
+        const userOpt = users.get(userId);
+        if ("None" in userOpt) {
+            return Err({
+                NotFound: `User with id=${userId} not found`
+            });
+        }
+        let user = userOpt.Some;
+        user.tokens += amount;
+        users.insert(userId, user);
+        return Ok(`Successfully minted ${amount} tokens for user ${userId}`);
+    }),
+    transferTokens: update([
+        text,
+        text,
+        nat64
+    ], Result(text, Message), (fromUserId, toUserId, amount)=>{
+        const fromUserOpt = users.get(fromUserId);
+        const toUserOpt = users.get(toUserId);
+        if ("None" in fromUserOpt || "None" in toUserOpt) {
+            return Err({
+                NotFound: `One or both users not found`
+            });
+        }
+        let fromUser = fromUserOpt.Some;
+        let toUser = toUserOpt.Some;
+        if (fromUser.tokens < amount) {
+            return Err({
+                InvalidPayload: `Insufficient tokens for transfer`
+            });
+        }
+        fromUser.tokens -= amount;
+        toUser.tokens += amount;
+        users.insert(fromUserId, fromUser);
+        users.insert(toUserId, toUser);
+        return Ok(`Successfully transferred ${amount} tokens from ${fromUserId} to ${toUserId}`);
+    }),
+    addMilestone: update([
+        Milestone
+    ], Result(text, Message), (milestone)=>{
+        const id2 = v4_default();
+        milestones.insert(id2, milestone);
+        return Ok(`Milestone ${id2} added successfully`);
+    }),
+    checkAndRewardMilestones: update([
+        text
+    ], Result(Vec2(text), Message), (userId)=>{
+        const userOpt = users.get(userId);
+        if ("None" in userOpt) {
+            return Err({
+                NotFound: `User with id=${userId} not found`
+            });
+        }
+        let user = userOpt.Some;
+        let rewardedMilestones = [];
+        const milestoneKeys = milestones.keys();
+        milestoneKeys.forEach((milestoneId)=>{
+            const milestoneOpt = milestones.get(milestoneId);
+            if ("Some" in milestoneOpt) {
+                const milestone = milestoneOpt.Some;
+                if (!user.claimedMilestones.includes(milestoneId)) {
+                    user.tokens += milestone.tokenReward;
+                    user.claimedMilestones.push(milestoneId);
+                    rewardedMilestones.push(milestoneId);
+                }
+            }
+        });
+        users.insert(userId, user);
+        return Ok(rewardedMilestones);
+    }),
+    redeemReward: update([
+        text,
+        text
+    ], Result(text, Message), (userId, rewardId)=>{
+        const userOpt = users.get(userId);
+        const rewardOpt = rewards.get(rewardId);
+        if ("None" in userOpt || "None" in rewardOpt) {
+            return Err({
+                NotFound: `User or Reward not found`
+            });
+        }
+        let user = userOpt.Some;
+        let reward = rewardOpt.Some;
+        if (user.tokens < reward.tokenCost) {
+            return Err({
+                InvalidPayload: `Insufficient tokens for redemption`
+            });
+        }
+        user.tokens -= reward.tokenCost;
+        reward.availability -= 1;
+        users.insert(userId, user);
+        rewards.insert(rewardId, reward);
+        return Ok(`Reward ${rewardId} successfully redeemed by ${userId}`);
     })
 });
 globalThis.crypto = {

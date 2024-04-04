@@ -12,14 +12,7 @@ export interface _SERVICE {
         'tokenReward' : bigint,
       },
     ],
-    {
-        'Ok' : {
-          'id' : string,
-          'durationInDays' : bigint,
-          'description' : string,
-          'tokenReward' : bigint,
-        }
-      } |
+    { 'Ok' : string } |
       { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
   >,
   'addUser' : ActorMethod<
@@ -43,6 +36,11 @@ export interface _SERVICE {
           'roles' : Array<string>,
         }
       } |
+      { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
+  >,
+  'checkAndRewardMilestones' : ActorMethod<
+    [string],
+    { 'Ok' : Array<string> } |
       { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
   >,
   'getMilestone' : ActorMethod<
@@ -69,6 +67,21 @@ export interface _SERVICE {
           'roles' : Array<string>,
         }
       } |
+      { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
+  >,
+  'mintTokens' : ActorMethod<
+    [string, bigint],
+    { 'Ok' : string } |
+      { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
+  >,
+  'redeemReward' : ActorMethod<
+    [string, string],
+    { 'Ok' : string } |
+      { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
+  >,
+  'transferTokens' : ActorMethod<
+    [string, string, bigint],
+    { 'Ok' : string } |
       { 'Err' : { 'InvalidPayload' : string } | { 'NotFound' : string } }
   >,
 }
