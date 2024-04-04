@@ -1,4 +1,4 @@
-import { Principal } from 'azle';
+import { Principal, Canister } from 'azle';
 
 // Interface adjustments for compatibility with ICP and Azle
 interface User {
@@ -48,7 +48,7 @@ interface RewardRedemption {
 }
 
 // Add more interfaces and types as needed...
-class TokenManager {
+export default class TokenManager {
     private users: Map<string, User> = new Map(); // Changed to a Map for indexing by Principal
     private totalSupply: bigint = 0n;
     private transactions: Transaction[] = [];
