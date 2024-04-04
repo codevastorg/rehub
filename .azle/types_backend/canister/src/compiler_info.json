@@ -1,1 +1,0 @@
-{"canister_methods":{"queries":[{"name":"getUser","composite":false},{"name":"getMilestone","composite":false}],"updates":[{"name":"addUser"},{"name":"addMilestone"},{"name":"mintTokens"},{"name":"transferTokens"},{"name":"checkAndRewardMilestones"},{"name":"redeemReward"}],"callbacks":{}}}
