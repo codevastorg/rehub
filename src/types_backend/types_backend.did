@@ -1,3 +1,6 @@
-service : {
-    "greet" : (text) -> (text) query;
+service: () -> {
+    addMilestone: (record {id:text; durationInDays:nat64; description:text; tokenReward:nat64}) -> (variant {Ok:record {id:text; durationInDays:nat64; description:text; tokenReward:nat64}; Err:variant {InvalidPayload:text; NotFound:text}});
+    addUser: (record {id:text; sobrietyDate:nat64; name:text; tokens:nat64; claimedMilestones:vec text; roles:vec text}) -> (variant {Ok:record {id:text; sobrietyDate:nat64; name:text; tokens:nat64; claimedMilestones:vec text; roles:vec text}; Err:variant {InvalidPayload:text; NotFound:text}});
+    getMilestone: (text) -> (variant {Ok:record {id:text; durationInDays:nat64; description:text; tokenReward:nat64}; Err:variant {InvalidPayload:text; NotFound:text}}) query;
+    getUser: (text) -> (variant {Ok:record {id:text; sobrietyDate:nat64; name:text; tokens:nat64; claimedMilestones:vec text; roles:vec text}; Err:variant {InvalidPayload:text; NotFound:text}}) query;
 }

@@ -1,0 +1,1 @@
+{"canister_methods":{"queries":[{"name":"getUser","composite":false},{"name":"getMilestone","composite":false}],"updates":[{"name":"addUser"},{"name":"addMilestone"}],"callbacks":{}}}
