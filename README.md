@@ -2,6 +2,19 @@
 
 A tokenized incentive system on the ICP blockchain that encourages individuals to seek rehab & stay clean. Tokens are awarded for meeting sobriety milestones, participating in counseling sessions, or engaging in community service activities. These tokens can be redeemed for rewards such as access to job training programs or discounts on goods and services.
 
+✨ Key Features
+
+_Tokenized incentives_: Earn fungible tokens for achieving goals and participating in recovery activities.
+
+_Milestone-based rewards_: Unlock rewards for reaching designated sobriety milestones.
+
+_Activity validation_: Securely validate activities through a designated validator role.
+
+_Reward marketplace_: Redeem tokens for valuable rewards that support recovery and well-being.
+
+_Transparency and trust_: Leverage the power of blockchain technology to ensure data integrity and accountability.
+✨
+
 To learn more before you start working with types, see the following documentation available online:
 
 - [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
