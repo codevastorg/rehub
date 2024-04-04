@@ -1,8 +1,6 @@
-# types
+# rehub
 
-Welcome to your new types project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
-
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+A tokenized incentive system on the ICP blockchain that encourages individuals to seek rehab & stay clean. Tokens are awarded for meeting sobriety milestones, participating in counseling sessions, or engaging in community service activities. These tokens can be redeemed for rewards such as access to job training programs or discounts on goods and services.
 
 To learn more before you start working with types, see the following documentation available online:
 
