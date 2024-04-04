@@ -1,5 +1,5 @@
 import { html, render } from 'lit-html';
-import { nn_backend } from 'declarations/nn_backend';
+import { types_backend } from 'declarations/types_backend';
 import logo from './logo2.svg';
 
 class App {
@@ -12,7 +12,7 @@ class App {
   #handleSubmit = async (e) => {
     e.preventDefault();
     const name = document.getElementById('name').value;
-    this.greeting = await nn_backend.greet(name);
+    this.greeting = await types_backend.greet(name);
     this.#render();
   };
 

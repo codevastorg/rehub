@@ -1,19 +1,22 @@
 {
   "canisters": {
-    "nn_backend": {
-      "candid": "src/nn_backend/nn_backend.did",
-      "package": "nn_backend",
-      "type": "rust"
+    "types_backend": {
+      "build": "npx azle types_backend",
+      "candid": "src/types_backend/types_backend.did",
+      "gzip": true,
+      "main": "src/types_backend/src/index.ts",
+      "type": "custom",
+      "wasm": ".azle/types_backend/types_backend.wasm"
     },
-    "nn_frontend": {
+    "types_frontend": {
       "dependencies": [
-        "nn_backend"
+        "types_backend"
       ],
       "source": [
-        "src/nn_frontend/dist"
+        "src/types_frontend/dist"
       ],
       "type": "assets",
-      "workspace": "nn_frontend"
+      "workspace": "types_frontend"
     }
   },
   "defaults": {
