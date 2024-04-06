@@ -1,7 +1,7 @@
-import { Canister, query, update, Principal, nat64, Opt, Vec, Result, Err, Ok, text, Record, Variant, StableBTreeMap } from "azle";
+import { Canister, query, update, nat64, Opt, Result, Err, Ok, text, Record, Vec, Variant, StableBTreeMap } from "azle";
 import { v4 as uuidv4 } from "uuid";
 
-// Define your data models
+// Define data models
 const User = Record({
     id: text,
     name: text,
@@ -47,7 +47,7 @@ const Message = Variant({
     InvalidPayload: text,
 });
 
-// Initialize your storage
+// Initialize storage
 const users = StableBTreeMap(0, text, User);
 const milestones = StableBTreeMap(1, text, Milestone);
 const transactions = StableBTreeMap(2, text, Transaction);
@@ -55,6 +55,7 @@ const rewards = StableBTreeMap(3, text, Reward);
 const activities = StableBTreeMap(4, text, Activity);
 
 export default Canister({
+    // Add a new user
     addUser: update([User], Result(User, Message), (userPayload) => {
         if (!userPayload.name || !userPayload.sobrietyDate) {
             return Err({ InvalidPayload: "Invalid user data" });
@@ -65,14 +66,13 @@ export default Canister({
         return Ok(newUser);
     }),
 
+    // Get a user by ID
     getUser: query([text], Result(User, Message), (id) => {
         const user = users.get(id);
-        if ("None" in user) {
-            return Err({ NotFound: `User with id=${id} not found` });
-        }
-        return Ok(user.Some);
+        return user ? Ok(user) : Err({ NotFound: `User with id=${id} not found` });
     }),
 
+    // Add a milestone
     addMilestone: update([Milestone], Result(Milestone, Message), (milestonePayload) => {
         const id = uuidv4();
         const newMilestone = { ...milestonePayload, id };
@@ -80,116 +80,83 @@ export default Canister({
         return Ok(newMilestone);
     }),
 
+    // Get a milestone by ID
     getMilestone: query([text], Result(Milestone, Message), (id) => {
         const milestone = milestones.get(id);
-        if ("None" in milestone) {
-            return Err({ NotFound: `Milestone with id=${id} not found` });
-        }
-        return Ok(milestone.Some);
+        return milestone ? Ok(milestone) : Err({ NotFound: `Milestone with id=${id} not found` });
     }),
 
+    // Mint tokens for a user
     mintTokens: update([text, nat64], Result(text, Message), (userId, amount) => {
-        const userOpt = users.get(userId);
-        if ("None" in userOpt) {
+        const user = users.get(userId);
+        if (!user) {
             return Err({ NotFound: `User with id=${userId} not found` });
         }
-        let user = userOpt.Some;
-        user.tokens += amount; // Assuming tokens is a bigint
+        user.tokens += amount;
         users.insert(userId, user);
         return Ok(`Successfully minted ${amount} tokens for user ${userId}`);
     }),
 
+    // Transfer tokens from one user to another
     transferTokens: update([text, text, nat64], Result(text, Message), (fromUserId, toUserId, amount) => {
-        const fromUserOpt = users.get(fromUserId);
-        const toUserOpt = users.get(toUserId);
-        if ("None" in fromUserOpt || "None" in toUserOpt) {
-            return Err({ NotFound: `One or both users not found` });
+        const fromUser = users.get(fromUserId);
+        const toUser = users.get(toUserId);
+        if (!fromUser || !toUser) {
+            return Err({ NotFound: "One or both users not found" });
         }
-        let fromUser = fromUserOpt.Some;
-        let toUser = toUserOpt.Some;
-        
         if (fromUser.tokens < amount) {
-            return Err({ InvalidPayload: `Insufficient tokens for transfer` });
+            return Err({ InvalidPayload: "Insufficient tokens for transfer" });
         }
-        
         fromUser.tokens -= amount;
         toUser.tokens += amount;
-        
         users.insert(fromUserId, fromUser);
         users.insert(toUserId, toUser);
-        
         return Ok(`Successfully transferred ${amount} tokens from ${fromUserId} to ${toUserId}`);
     }),
 
-    addMilestone: update([Milestone], Result(text, Message), (milestone) => {
-        const id = uuidv4();
-        milestones.insert(id, milestone);
-        return Ok(`Milestone ${id} added successfully`);
-    }),
-
-    checkAndRewardMilestones: update([text], Result(Vec(text), Message), (userId) => {
-        const userOpt = users.get(userId);
-        if ("None" in userOpt) {
-            return Err({ NotFound: `User with id=${userId} not found` });
-        }
-        let user = userOpt.Some;
-        let rewardedMilestones: string[] = [];
-    
-        // Use the items() or keys() method to retrieve milestones, then iterate
-        const milestoneKeys = milestones.keys(); // This retrieves an array of milestone IDs (keys)
-        milestoneKeys.forEach((milestoneId) => {
-            const milestoneOpt = milestones.get(milestoneId);
-            if ("Some" in milestoneOpt) {
-                const milestone = milestoneOpt.Some;
-                // Assuming your condition here to check if the milestone is achieved
-                if (!user.claimedMilestones.includes(milestoneId) /* && other condition */) {
-                    user.tokens += milestone.tokenReward; // Reward the user
-                    user.claimedMilestones.push(milestoneId); // Mark as claimed
-                    rewardedMilestones.push(milestoneId); // Keep track of rewarded milestones
-                }
-            }
-        });
-    
-        users.insert(userId, user);
-        return Ok(rewardedMilestones); // Return the list of rewarded milestones
-    }),
-    
-
+    // Redeem a reward
     redeemReward: update([text, text], Result(text, Message), (userId, rewardId) => {
-        const userOpt = users.get(userId);
-        const rewardOpt = rewards.get(rewardId);
-        if ("None" in userOpt || "None" in rewardOpt) {
-            return Err({ NotFound: `User or Reward not found` });
+        const user = users.get(userId);
+        const reward = rewards.get(rewardId);
+        if (!user || !reward) {
+            return Err({ NotFound: "User or Reward not found" });
         }
-        let user = userOpt.Some;
-        let reward = rewardOpt.Some;
-        
         if (user.tokens < reward.tokenCost) {
-            return Err({ InvalidPayload: `Insufficient tokens for redemption` });
+            return Err({ InvalidPayload: "Insufficient tokens for redemption" });
         }
-        
-        user.tokens -= reward.tokenCost; // Deduct the cost
-        reward.availability -= 1; // Reduce reward availability
-        
+        user.tokens -= reward.tokenCost;
+        reward.availability -= 1;
         users.insert(userId, user);
         rewards.insert(rewardId, reward);
-        
         return Ok(`Reward ${rewardId} successfully redeemed by ${userId}`);
     }),
 
-    // Note: Replace uuidv4() and adjust types accordingly if necessary.
+    // Check and reward milestones for a user
+    checkAndRewardMilestones: update([text], Result(Vec(text), Message), (userId) => {
+        const user = users.get(userId);
+        if (!user) {
+            return Err({ NotFound: `User with id=${userId} not found` });
+        }
+        const rewardedMilestones = [];
+        milestones.forEach((milestoneId, milestone) => {
+            if (!user.claimedMilestones.includes(milestoneId) /* && other conditions */) {
+                user.tokens += milestone.tokenReward;
+                user.claimedMilestones.push(milestoneId);
+                rewardedMilestones.push(milestoneId);
+            }
+        });
+        users.insert(userId, user);
+        return Ok(rewardedMilestones);
+    }),
 });
 
-// a workaround to make uuid package work with Azle
+// Provide a workaround to make uuid package work with Azle
 globalThis.crypto = {
-    // @ts-ignore
     getRandomValues: () => {
-        let array = new Uint8Array(32);
-
+        const array = new Uint8Array(32);
         for (let i = 0; i < array.length; i++) {
             array[i] = Math.floor(Math.random() * 256);
         }
-
         return array;
     }
 };
