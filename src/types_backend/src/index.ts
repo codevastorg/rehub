@@ -121,12 +121,6 @@ export default Canister({
         return Ok(`Successfully transferred ${amount} tokens from ${fromUserId} to ${toUserId}`);
     }),
 
-    addMilestone: update([Milestone], Result(text, Message), (milestone) => {
-        const id = uuidv4();
-        milestones.insert(id, milestone);
-        return Ok(`Milestone ${id} added successfully`);
-    }),
-
     checkAndRewardMilestones: update([text], Result(Vec(text), Message), (userId) => {
         const userOpt = users.get(userId);
         if ("None" in userOpt) {
